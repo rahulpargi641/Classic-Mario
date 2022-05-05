@@ -5,13 +5,14 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    public float speed = 5.0f;
+    public float speed = 7.0f;
     public Rigidbody2D rigidbody;
     public Animator animator; 
     // Start is called before the first frame update
     void Start()
     {
         rigidbody = GetComponent<Rigidbody2D>();
+        animator = GetComponent<Animator>();
     }
 
     // Update is called once per frame
@@ -27,16 +28,31 @@ public class PlayerMovement : MonoBehaviour
 
     void Walk()
     {
-        float x = Input.GetAxisRaw("Horizontal");
-        if(x>0)
+        float inputV = Input.GetAxisRaw("Horizontal");
+        if(inputV>0)
         {
             rigidbody.velocity = new Vector2(speed, rigidbody.velocity.y);
+            ChangeDirection(1);
             
         }   
-        else if(x<0)
+        else if(inputV<0)
         {
             rigidbody.velocity = new Vector2(-speed, rigidbody.velocity.y);
+            ChangeDirection(-1);
         }
-        print("Value is :" + x);
+        else
+        {
+            rigidbody.velocity = new Vector2(0, rigidbody.velocity.y); // prevent from sliding and also natural flow in y direction 
+        }
+        print("Value is :" + inputV);
+
+        animator.SetInteger("Velocity", Mathf.Abs((int)rigidbody.velocity.x));
+    }
+
+    void ChangeDirection(int direction)
+    {
+        Vector3 tempScale = transform.localScale;
+        tempScale.x = direction;
+        transform.localScale = tempScale;
     }
 }
