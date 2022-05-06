@@ -6,8 +6,10 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     public float speed = 7.0f;
-    public Rigidbody2D rigidbody;
-    public Animator animator; 
+     Rigidbody2D rigidbody;
+     Animator animator;
+    public Transform groundCheckPos;
+     public LayerMask groundLayer;
     // Start is called before the first frame update
     void Start()
     {
@@ -18,7 +20,10 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if(Physics2D.Raycast(groundCheckPos.position, Vector2.down, 0.5f, groundLayer))
+        {
+            print("Collide With Ground");
+        }
     }
 
     void FixedUpdate()
@@ -55,4 +60,22 @@ public class PlayerMovement : MonoBehaviour
         tempScale.x = direction;
         transform.localScale = tempScale;
     }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if(collision.gameObject.tag=="Ground")
+        {
+           // print("Collision has happened");
+
+        }
+    }
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if(collision.tag == "Ground")
+        {
+           // print("Collision has happened");
+
+        }
+    }
+ 
 }
