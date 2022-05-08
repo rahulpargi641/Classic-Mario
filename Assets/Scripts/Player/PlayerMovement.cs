@@ -5,11 +5,19 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    public float speed = 7.0f;
-     Rigidbody2D rigidbody;
-     Animator animator;
-    public Transform groundCheckPos;
-     public LayerMask groundLayer;
+    [SerializeField] Transform groundCheckPos;
+    public LayerMask groundLayer;
+
+    Rigidbody2D rigidbody;
+    Animator animator;
+
+    bool isGrounded;
+    bool jump;
+
+    [SerializeField] float speed = 7.0f;
+    float jumpPower = 8f;
+
+    
     // Start is called before the first frame update
     void Start()
     {
@@ -20,10 +28,8 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(Physics2D.Raycast(groundCheckPos.position, Vector2.down, 0.5f, groundLayer))
-        {
-            print("Collide With Ground");
-        }
+        CheckIfGrounded();
+        PlayeJump();
     }
 
     void FixedUpdate()
@@ -33,35 +39,35 @@ public class PlayerMovement : MonoBehaviour
 
     void Walk()
     {
-        float inputV = Input.GetAxisRaw("Horizontal");
-        if(inputV>0)
+        float input = Input.GetAxisRaw("Horizontal");
+        if(input>0)
         {
             rigidbody.velocity = new Vector2(speed, rigidbody.velocity.y);
-            ChangeDirection(1);
+            ReverseDirection(1);
             
         }   
-        else if(inputV<0)
+        else if(input<0)
         {
             rigidbody.velocity = new Vector2(-speed, rigidbody.velocity.y);
-            ChangeDirection(-1);
+            ReverseDirection(-1);
         }
         else
         {
             rigidbody.velocity = new Vector2(0, rigidbody.velocity.y); // prevent from sliding and also natural flow in y direction 
         }
-        print("Value is :" + inputV);
+        //print("Value is :" + inputV);
 
         animator.SetInteger("Velocity", Mathf.Abs((int)rigidbody.velocity.x));
     }
 
-    void ChangeDirection(int direction)
+    void ReverseDirection(int direction)
     {
-        Vector3 tempScale = transform.localScale;
+        Vector3 tempScale = transform.localScale; // you need to store temporary variable in unity
         tempScale.x = direction;
         transform.localScale = tempScale;
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+  /*  private void OnCollisionEnter2D(Collision2D collision)
     {
         if(collision.gameObject.tag=="Ground")
         {
@@ -75,6 +81,32 @@ public class PlayerMovement : MonoBehaviour
         {
            // print("Collision has happened");
 
+        }
+    }   */
+
+    void CheckIfGrounded()
+    {
+        isGrounded = Physics2D.Raycast(groundCheckPos.position, Vector2.down, 0.1f, groundLayer);
+        if (isGrounded)
+        {
+            if(jump)
+            {
+                jump = false;
+                animator.SetBool("Jump", false);
+            }
+        }
+    }
+
+    void PlayeJump()
+    {
+        if (isGrounded)
+        {
+            if (Input.GetKey(KeyCode.Space))
+            {
+                jump = true;
+                rigidbody.velocity = new Vector2(rigidbody.velocity.x, jumpPower);
+                animator.SetBool("Jump", true);
+            }
         }
     }
  
