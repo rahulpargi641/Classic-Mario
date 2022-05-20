@@ -9,39 +9,105 @@ public class Snail : MonoBehaviour
     Rigidbody2D rigidbody;
     Animator animator;
 
+    public LayerMask playerLayer;
+
     bool moveLeft;
-    [SerializeField] Transform downCollision;
+    bool canMove;
+    bool stunned;
+    [SerializeField] Transform downCollision, topCollision, leftCollision, rightCollision;
+    Vector3 leftCollisionPos, rightCollisionPos;
 
     private void Awake()
     {
         rigidbody = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
+        leftCollisionPos = leftCollision.position;
+        rightCollisionPos = rightCollision.position;
     }
     // Start is called before the first frame update
     void Start()
     {
         moveLeft = true;
+        canMove = true;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (moveLeft)
+        if (canMove)
         {
-            rigidbody.velocity = new Vector2(-moveSpeed, rigidbody.velocity.y);
-        }
+            if(moveLeft)
+        {
+                rigidbody.velocity = new Vector2(-moveSpeed, rigidbody.velocity.y);
+            }
         else
-        {
-            rigidbody.velocity = new Vector2(moveSpeed, rigidbody.velocity.y);
+            {
+                rigidbody.velocity = new Vector2(moveSpeed, rigidbody.velocity.y);
 
+            }
         }
+
         CheckCollision();
     }
 
     private void CheckCollision()
     {
+        RaycastHit2D leftHit = Physics2D.Raycast(leftCollision.position, Vector2.left, 0.1f, playerLayer);
+        RaycastHit2D rightHit = Physics2D.Raycast(rightCollision.position, Vector2.right, 0.1f, playerLayer);
 
-        if (!Physics2D.Raycast(downCollision.position, Vector2.down, 0.5f))
+        Collider2D topHit = Physics2D.OverlapCircle(topCollision.position, .2f, playerLayer);
+
+        if (topHit != null)
+        {
+            if (topHit.gameObject.tag == Tags.PLAYER_TAG)
+            {
+                if (!stunned)
+                {
+                    topHit.gameObject.GetComponent<Rigidbody2D>().velocity = new Vector2(topHit.gameObject.GetComponent<Rigidbody2D>().velocity.x, 7f);
+                    canMove = false;
+                    rigidbody.velocity = new Vector2(0, 0);
+                    animator.Play("Stunned");
+                    stunned = true;
+
+                    // Beetle code here
+
+
+
+                }
+            }
+        }
+
+        if (leftHit)
+        {
+            if(leftHit.collider.gameObject.tag == Tags.PLAYER_TAG)
+            {
+                if (!stunned)
+                {
+
+                }
+                else
+                {
+                    rigidbody.velocity = new Vector2(15f, rigidbody.velocity.y);
+                }
+            }
+        }
+
+        if (rightHit)
+        {
+            if(rightHit.collider.gameObject.tag == Tags.PLAYER_TAG)
+            {
+                if (!stunned)
+                {
+                    
+                }
+                else
+                {
+                    rigidbody.velocity = new Vector2(-15f, rigidbody.velocity.y);
+                }
+            }
+        }
+
+        if (!Physics2D.Raycast(downCollision.position, Vector2.down, 0.5f)) 
         {
             print("not detecting collision");
 
@@ -57,12 +123,28 @@ public class Snail : MonoBehaviour
         if (moveLeft)
         {
             tempScale.x = Mathf.Abs(tempScale.x);
+
+            leftCollision.position = leftCollisionPos;
+            rightCollision.position = rightCollisionPos;
+            
+
         }
         else
         {
             tempScale.x = -Mathf.Abs(tempScale.x);
+
+            rightCollision.position = leftCollisionPos;
+            leftCollision.position = rightCollisionPos;
         }
 
         transform.localScale = tempScale;
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if(collision.gameObject.tag=="Player")
+        {
+            animator.Play("Stunned");
+        }
     }
 }
