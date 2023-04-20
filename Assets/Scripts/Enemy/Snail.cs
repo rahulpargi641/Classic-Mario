@@ -70,24 +70,32 @@ public class Snail : MonoBehaviour
                     stunned = true;
 
                     // Beetle code here
-
-
-
+                    if(tag == Tags.BEETLE_TAG)
+                    {
+                        Debug.Log("Bettle should be stunned");
+                        animator.Play("Bettle Stunned");
+                        StartCoroutine(Dead(0.5f));
+                    }
                 }
             }
         }
 
-        if (leftHit)
+        if (leftHit) // player pushing from the left, snail will be pushed to the right
         {
             if(leftHit.collider.gameObject.tag == Tags.PLAYER_TAG)
             {
                 if (!stunned)
                 {
-
+                    // Apply damgae to the player
                 }
                 else
                 {
-                    rigidbody.velocity = new Vector2(15f, rigidbody.velocity.y);
+                    if(tag != Tags.BEETLE_TAG)
+                    {
+                        rigidbody.velocity = new Vector2(15f, rigidbody.velocity.y);
+                        StartCoroutine(Dead(3f));
+                    }
+                    
                 }
             }
         }
@@ -98,11 +106,16 @@ public class Snail : MonoBehaviour
             {
                 if (!stunned)
                 {
-                    
+                    // Apply damage to the player
                 }
                 else
                 {
-                    rigidbody.velocity = new Vector2(-15f, rigidbody.velocity.y);
+                    if(tag != Tags.BEETLE_TAG)
+                    {
+                        rigidbody.velocity = new Vector2(-15f, rigidbody.velocity.y);
+                        StartCoroutine(Dead(3f));
+                    }
+                    
                 }
             }
         }
@@ -110,7 +123,6 @@ public class Snail : MonoBehaviour
         if (!Physics2D.Raycast(downCollision.position, Vector2.down, 0.5f)) 
         {
             print("not detecting collision");
-
             ReverseDirection();
         }
     }
@@ -146,5 +158,11 @@ public class Snail : MonoBehaviour
         {
             animator.Play("Stunned");
         }
+    }
+
+    IEnumerator Dead(float timer)
+    {
+        yield return new WaitForSeconds(timer);
+        gameObject.SetActive(false);
     }
 }
